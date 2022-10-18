@@ -9,7 +9,7 @@ def error_exit():
     input('Нажмите любую клавишу для выхода...')
     exit()
 
-def handler(account_id, list_id):
+def handler(account_id, list_id, table):
     main_url = 'https://api.zenmoney.ru/share/account/'
     r = req.get(f'{main_url}{account_id}/account/').json()
 
@@ -66,14 +66,17 @@ with open('config_parser.json','r',encoding='utf-8') as file:
         error_exit()
 
     gc = gspread.authorize(credentials)
-    table = gc.open_by_key(cfg.get('list_id'))
 
-    del cfg['list_id']
+    for row in cfg:
+        table = gc.open_by_key(row.get('list_id'))
 
-    for account_id, list_id in cfg.items():
-        print(f'Обновляю {account_id} в {list_id}')
-        handler(account_id, list_id)
-        print(f'Успешно обновил {account_id} в {list_id}')
+        del row['list_id']
+
+        for account_id, list_id in row.items():
+            print(f'Обновляю {account_id} в {list_id}')
+            handler(account_id, list_id, table)
+            print(f'Успешно обновил {account_id} в {list_id}')
 
     print('Данные успешно обновлены!')
+    input('Для выхода, нажмите любую клавишу')
 
